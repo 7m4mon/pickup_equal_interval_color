@@ -1,3 +1,15 @@
+# coding: utf-8
+
+'''
+LEDギャラリー[https://w.atwiki.jp/led-gallery/]
+の画像を保存したフォルダに対して一括で
+サイズの縮小＆減色するプログラム。
+3 ピクセル毎にピックアップして、予め設定したパレットから近似色を選ぶ
+実際に Pico LED Matrix で表示させるには JTrimによる後処理（256色化）が必要
+
+2023.3 7M4MON
+'''
+
 from PIL import Image
 import math
 import glob
