@@ -2,10 +2,11 @@
 
 '''
 LEDギャラリー[https://w.atwiki.jp/led-gallery/]
-の画像を保存したフォルダに対して一括で
-サイズの縮小＆減色するプログラム。
-3 ピクセル毎にピックアップして、予め設定したパレットから近似色を選ぶ
-実際に Pico LED Matrix で表示させるには JTrimによる後処理（256色化）が必要
+の画像を保存したフォルダに対して一括でサイズの縮小＆減色するプログラム。
+3 ピクセル毎にピックアップして、予め設定したパレットから近似色を選ぶ。
+パレットは [led-gallery(R,G,B), led-matrix(R,G,B)]の順になっていて
+ピックアップした色に最も近い色[0]に対応する色[1]に置き換えます。
+実際に Pico LED Matrix で表示させるには JTrimによる後処理（256色化）が必要です。
 
 2023.3 7M4MON
 '''
@@ -16,22 +17,42 @@ import glob
 from pathlib import Path
 
 
-SUB_DIR = 'toei-5300'
+SUB_DIR = 'splitted2'
+
+# color_palette [[led-gallery(R,G,B), led-matrix(R,G,B)], ... ]
+
+'''
+color_palette = [                   # 3 Color LED, ex: toei-5300
+    [(51,51,51),(0,0,0)],           # Black
+    [(255,0,0),(255,0,0)],          # Red
+    [(0,255,0),(0,255,0)],          # Green
+    [(255,153,51),(255,127,0)]      # Orange
+    ] 
+'''
+
+color_palette = [                   # Full Color LED, ex: jre-e233_side
+    [(51,51,51),(0,0,0)],           # Black
+    [(255,255,255),(255,255,255)],  # White
+    [(255,0,0),(255,0,0)],          # Red
+    [(0,147,103),(0,127,0)],        # Green (東京経由)
+    [(255,127,39),(255,127,0)],     # Orange
+    [(183,74,255),(127,0,255)],     # Purple（通勤快速）
+    [(21,173,255),(0,127,255)]      # Cyan（特別快速）
+    ] 
 
 
-color_palette = [(0,0,0),(255,0,0),(0,255,0),(255,127,0)]   # black, red, green, orange
 
 def get_approximate_color(c):
     min_distance = 99999
     index = 0
     color_index = 0
     for cp in color_palette:
-        distance = math.sqrt( (cp[0]-c[0])*(cp[0]-c[0])+(cp[1]-c[1])*(cp[1]-c[1])+(cp[2]-c[2])*(cp[2]-c[2])) 
+        distance = math.sqrt( (cp[0][0]-c[0])*(cp[0][0]-c[0])*0.299+(cp[0][1]-c[1])*(cp[0][1]-c[1])*0.587+(cp[0][2]-c[2])*(cp[0][2]-c[2])*0.117) 
         if distance < min_distance:
             min_distance = distance
             color_index = index
         index += 1
-    return color_palette[color_index]
+    return color_palette[color_index][1]
 
 
 def convert_approximate_color(file_name):
